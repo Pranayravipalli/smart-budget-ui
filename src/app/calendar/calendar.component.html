@@ -1,0 +1,39 @@
+<div class="calendar-wrapper">
+  <!-- Header with navigation -->
+  <div class="calendar-header">
+    <button (click)="previousMonth()">&lt;</button>
+    <h2>{{ viewDate | date: 'MMMM yyyy' }}</h2>
+    <button (click)="nextMonth()">&gt;</button>
+  </div>
+
+  <!-- Week day labels -->
+  <div class="calendar-grid">
+    <div class="day-label" *ngFor="let day of weekDays">{{ day }}</div>
+
+    <!-- Calendar cells -->
+    <div
+      class="calendar-cell"
+      *ngFor="let day of calendarDays"
+      [class.other-month]="!day.isCurrentMonth"
+      (click)="onDayClick(day.date)"
+    >
+      <div class="day-number">{{ day.date.getDate() }}</div>
+      <div *ngIf="hasExpenses(day.date)" class="dot"></div>
+    </div>
+  </div>
+
+  <!-- Sidebar for selected day's expenses -->
+  <div class="sidebar" *ngIf="selectedDay">
+    <h3>Expenses for {{ selectedDay | date: 'MMMM d, yyyy' }}</h3>
+
+    <ul *ngIf="selectedDayExpenses.length > 0">
+      <li *ngFor="let exp of selectedDayExpenses">
+        <strong>{{ exp.title }}</strong> – ₹{{ exp.amount }} ({{ exp.category }})
+      </li>
+    </ul>
+
+    <p *ngIf="selectedDayExpenses.length === 0">No expenses for this day.</p>
+
+    <button class="close-btn" (click)="selectedDay = null">Close</button>
+  </div>
+</div>

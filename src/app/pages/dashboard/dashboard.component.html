@@ -1,0 +1,133 @@
+<div class="dashboard-container">
+  <h2>Add Expense</h2>
+
+  <form [formGroup]="expenseForm" (ngSubmit)="onSubmit()">
+    <!-- Form Fields -->
+    <div class="form-group">
+      <label for="amount">Amount:</label>
+      <input type="number" id="amount" formControlName="amount" required />
+    </div>
+
+    <div class="form-group">
+      <label for="category">Category:</label>
+      <select id="category" formControlName="category" required>
+        <option value="">-- Select Category --</option>
+        <option value="Food">🍔 Food</option>
+        <option value="Transport">🚌 Transport</option>
+        <option value="Rent">🏠 Rent</option>
+        <option value="Utilities">💡 Utilities</option>
+        <option value="Shopping">🛍️ Shopping</option>
+        <option value="Savings">💰 Savings</option>
+        <option value="Social Life">🍻 Social Life</option>
+        <option value="Pets">🐾 Pets</option>
+        <option value="Culture">🎭 Culture</option>
+        <option value="Apparel">👗 Apparel</option>
+        <option value="Beauty">💅 Beauty</option>
+        <option value="Health">🏥 Health</option>
+        <option value="Gifts">🎁 Gifts</option>
+        <option value="Education">📚 Education</option>
+        <option value="Other">📦 Other</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="date">Date:</label>
+      <input type="date" id="date" formControlName="date" required />
+    </div>
+
+    <div class="form-group">
+      <label for="title">Title:</label>
+      <input type="text" id="title" formControlName="title" />
+    </div>
+
+    <div class="form-group">
+      <label>
+        <input type="checkbox" formControlName="isRecurring" />
+        Recurring Monthly
+      </label>
+    </div>
+
+    <div class="form-group" *ngIf="expenseForm.get('isRecurring')?.value">
+      <label for="recurringDay">Recurring Day (1–31):</label>
+      <input type="number" id="recurringDay" formControlName="recurringDay" min="1" max="31" />
+    </div>
+
+    <div class="form-group">
+      <button type="submit" [disabled]="expenseForm.invalid">Add Expense</button>
+    </div>
+  </form>
+
+  <p *ngIf="message">{{ message }}</p>
+
+  <!-- Toggle Buttons -->
+  <div style="text-align: center; margin-top: 30px;">
+    <button (click)="showHistory = !showHistory">
+      {{ showHistory ? 'Hide Expense History' : 'View Expense History' }}
+    </button>
+    <button (click)="showAnalytics = !showAnalytics" style="margin-left: 10px;">
+      {{ showAnalytics ? 'Hide Analytics' : 'View Analytics' }}
+    </button>
+    <button (click)="showTopCategory = !showTopCategory" style="margin-left: 10px;">
+      {{ showTopCategory ? 'Hide Top Category' : 'View Top Spending Category' }}
+    </button>
+    <button (click)="toggleYearlyAnalytics()" style="margin-left: 10px;">
+      {{ showYearlyAnalytics ? 'Hide Yearly Analytics' : 'View Yearly Analytics' }}
+    </button>
+    <button (click)="downloadCsv()" style="margin-left: 10px;">Download CSV</button>
+  </div>
+
+  <!-- Expense History -->
+  <div *ngIf="showHistory">
+    <hr />
+    <h3>Expense History</h3>
+    <div *ngIf="expenses.length === 0">
+      <p>No expenses added yet.</p>
+    </div>
+    <ul *ngIf="expenses.length > 0">
+      <li *ngFor="let expense of expenses">
+        <strong>{{ expense.date | date : 'yyyy-MM-dd' }}</strong> - ₹{{ expense.amount }}
+        <span>({{ expense.category }})</span>
+        <span *ngIf="expense.title"> - {{ expense.title }}</span>
+        <span *ngIf="expense.isRecurring"> 🔁</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Monthly Pie Chart -->
+  <div *ngIf="showAnalytics && pieData.datasets[0].data.length > 0" style="margin-top: 20px;">
+    <h3>📊 Monthly Category-wise Expenses</h3>
+    <canvas baseChart [data]="pieData" [type]="pieChartType" [labels]="pieLabels"></canvas>
+  </div>
+
+  <!-- Top Monthly Category -->
+  <div *ngIf="showTopCategory && topCategory" style="margin-top: 30px; text-align: center;">
+    <div style="border: 1px solid #ccc; padding: 15px; border-radius: 8px; max-width: 300px; margin: 0 auto;">
+      <h3>💸 Top Spending Category</h3>
+      <p style="font-size: 18px;">
+        <strong>{{ topCategory.category }}</strong> – ₹{{ topCategory.totalAmount }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Yearly Analytics -->
+  <div *ngIf="showYearlyAnalytics" style="margin-top: 20px;">
+    <h3>📅 Yearly Category-wise Expenses</h3>
+
+    <div style="margin-bottom: 10px;">
+      <label for="yearSelect">Select Year: </label>
+      <select id="yearSelect" [(ngModel)]="selectedYear" (change)="loadYearlySummary(); loadTopCategoryYearly();">
+        <option *ngFor="let y of [2023, 2024, 2025]" [value]="y">{{ y }}</option>
+      </select>
+    </div>
+
+    <canvas baseChart [data]="yearlyPieData" [type]="yearlyPieChartType" [labels]="yearlyPieLabels"></canvas>
+
+    <div *ngIf="topCategoryYearly" style="margin-top: 20px;">
+      <h4>Top Category for {{ selectedYear }}</h4>
+      <p><strong>{{ topCategoryYearly.category }}</strong> - ₹{{ topCategoryYearly.totalAmount }}</p>
+    </div>
+  </div>
+  <a routerLink="/calendar">
+  <button>📅 Open Calendar</button>
+</a>
+</div>
